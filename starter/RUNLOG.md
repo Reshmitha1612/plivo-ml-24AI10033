@@ -140,3 +140,50 @@ Dev BPB:
 
 Conclusion:
 Scaling the model utilized the remaining parameter budget effectively, leading to a new best BPB (down from 2.3526). The wider network absorbed more features within the 2000 steps without overfitting. This configuration will be kept as the new baseline.
+
+# Run 6 (Weight Tying to Create Parameter Headroom)
+
+Hypothesis:
+We need to expand the tokenizer vocabulary to handle the Devanagari (Hindi) text efficiently, but the previous configuration is at 1.90M parameters. Expanding the vocabulary to ~1,000 tokens without tied weights would cost roughly 384K parameters and push us well over the 2.0M cap. By turning on weight tying, we can deliberately free up parameters to create the headroom needed for this upcoming tokenizer upgrade.
+
+Changes:
+In model.py, changed `tie_weights` from False to True. All other settings remained unchanged.
+
+Training:
+2000 optimizer steps.
+
+Parameters:
+1,853,568
+
+Final training loss:
+1.7168
+
+Dev BPB:
+2.3722
+
+Conclusion:
+As expected, performance degraded slightly (BPB increased from 2.3408 to 2.3722) because forcing the input and output embeddings to share weights reduces the model's degrees of freedom. However, this was a necessary strategic trade-off: it freed up ~49K parameters, dropping our total to 1.85M. We will KEEP this configuration, as we now have the exact budget required to expand our tokenizer vocabulary to 1,000 tokens in the next run without violating the 2M hard cap.
+
+
+# Run 7 (BPE Tokenizer Implementation)
+
+Hypothesis:
+The baseline byte-level tokenizer forces Devanagari (Hindi) characters to consume 3 tokens each, artificially inflating sequence lengths and crippling the model's effective context window. Training a custom Byte-Pair Encoding (BPE) tokenizer to expand the vocabulary should compress the text sequence, allowing the model to process significantly more actual content within its 128-token context window per step.
+
+Changes:
+Replaced the byte-level tokenizer with a custom BPE tokenizer trained directly on `train_corpus.txt`. Expanded `vocab_size` to 1000. (The weight tying enabled in Run 6 kept the embedding parameter growth within the 2.0M cap).
+
+Training:
+2000 optimizer steps.
+
+Parameters:
+1,996,416
+
+Final training loss:
+4.1939
+
+Dev BPB:
+2.1751
+
+Conclusion:
+A good result. The dev BPB dropped drastically from 2.3722 to 2.1751. The tokenizer compressed the 7.3MB corpus from ~7.3M tokens down to 2.6M tokens. This allowed the model to effectively see ~2.8x more context per optimization step. The parameter count is perfectly maximized at 99.8% of the budget. We will keep this configuration as the new baseline.

@@ -16,7 +16,7 @@ class Config:
     n_head = 4
     n_embd = 160
     dropout = 0.0
-    tie_weights = True   
+    tie_weights = False  
 
 
 class SelfAttention(nn.Module):

@@ -57,8 +57,8 @@ def main():
     assert n <= MAX_PARAMS, f"cap: max {MAX_PARAMS:,} params"
 
     # baseline choices, all questionable on purpose:
-    opt = torch.optim.AdamW(model.parameters(),lr=args.lr,weight_decay=0.01)
-    # opt = torch.optim.Adam(model.parameters(), lr=args.lr)  # constant LR,
+    # opt = torch.optim.AdamW(model.parameters(),lr=args.lr,weight_decay=0.01)
+    opt = torch.optim.Adam(model.parameters(), lr=args.lr)  # constant LR,
     # no warmup, no schedule, no weight decay, no gradient clipping.
 
     model.train()
@@ -69,6 +69,7 @@ def main():
         _, loss = model(x, y)
         opt.zero_grad(set_to_none=True)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
         losses.append(loss.item())
         if step % args.log_every == 0 or step == 1:

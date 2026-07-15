@@ -68,3 +68,29 @@ Dev BPB:
 
 Conclusion:
 The optimizer change produced almost identical performance to the baseline, with a slightly higher BPB (2.3723 vs. 2.3718). Under the 2000-step training budget, AdamW alone did not provide a measurable benefit, so the baseline Adam optimizer was retained for subsequent experiments.
+
+
+# Run 3 (Gradient Clipping)
+
+Hypothesis:
+The baseline trainer does not use gradient clipping, which may allow occasional large gradient updates during optimization. Clipping the gradient norm could stabilize training and improve generalization within the limited 2000-step budget.
+
+Changes:
+Added gradient clipping using:
+
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+
+Training:
+2000 optimizer steps.
+
+Parameters:
+1,339,840
+
+Final training loss:
+1.7133
+
+Dev BPB:
+2.3526
+
+Conclusion:
+Gradient clipping consistently improved both the final training loss and the development BPB compared to the baseline. This suggests that limiting large gradient updates leads to more stable optimization under the fixed training budget. This change will be retained for future experiments.

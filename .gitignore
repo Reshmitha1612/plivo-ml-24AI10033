@@ -13,7 +13,5 @@ env/
 .DS_Store
 Thumbs.db
 
-# Model checkpoints
-starter/ckpt.pt
-
+# Exclude the dataset folder to save space (we don't need to submit this)
 data/

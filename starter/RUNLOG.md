@@ -187,3 +187,27 @@ Dev BPB:
 
 Conclusion:
 A good result. The dev BPB dropped drastically from 2.3722 to 2.1751. The tokenizer compressed the 7.3MB corpus from ~7.3M tokens down to 2.6M tokens. This allowed the model to effectively see ~2.8x more context per optimization step. The parameter count is perfectly maximized at 99.8% of the budget. We will keep this configuration as the new baseline.
+
+
+# Run 8 (Aggressive Cosine Decay Schedule)
+
+Hypothesis:
+An aggressive learning rate schedule (100-step linear warmup followed by cosine decay) with a high peak learning rate (2e-3) should allow the model to traverse the loss landscape faster early on, then settle into a deeper local minimum by step 2000 compared to a constant 3e-4 rate.
+
+Changes:
+In train.py, implemented a custom learning rate scheduler (`get_lr` with warmup and cosine decay) and applied it to the optimizer loop. Passed `--lr 2e-3` via command line. 
+
+Training:
+2000 optimizer steps.
+
+Parameters:
+1,996,416
+
+Final training loss:
+4.3308
+
+Dev BPB:
+2.2239
+
+Conclusion:
+The ambitious learning rate schedule degraded performance (BPB worsened from 2.1751 to 2.2239). The high peak learning rate of 2e-3 was likely too destabilizing for the newly expanded BPE embedding matrix. In a strict 2000-step budget, the model did not have enough time to recover from the aggressive initial updates. We are discarding this change and reverting `train.py` back to the constant 3e-4 learning rate used in Run 7, which remains our global minimum.

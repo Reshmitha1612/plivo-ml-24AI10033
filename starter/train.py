@@ -12,7 +12,6 @@ HARD CAPS (checked at grading, violations = disqualified run):
 """
 import argparse
 import time
-import math
 
 import torch
 
@@ -28,16 +27,6 @@ def get_batch(ids, block, batch, device):
     x = torch.stack([ids[i:i + block] for i in ix])
     y = torch.stack([ids[i + 1:i + 1 + block] for i in ix])
     return x.to(device), y.to(device)
-
-def get_lr(step, max_steps, max_lr, warmup_steps=100):
-    # 1) Linear warmup
-    if step < warmup_steps:
-        return max_lr * (step / warmup_steps)
-    # 2) Cosine decay down to 10% of max_lr
-    decay_ratio = (step - warmup_steps) / (max_steps - warmup_steps)
-    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
-    min_lr = max_lr * 0.1
-    return min_lr + coeff * (max_lr - min_lr)
 
 
 def main():
@@ -76,9 +65,6 @@ def main():
     t0 = time.time()
     losses = []
     for step in range(1, args.steps + 1):
-        lr = get_lr(step, args.steps, args.lr)
-        for param_group in opt.param_groups:
-            param_group['lr'] = lr
         x, y = get_batch(ids, cfg.block_size, args.batch, device)
         _, loss = model(x, y)
         opt.zero_grad(set_to_none=True)

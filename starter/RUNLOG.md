@@ -94,3 +94,49 @@ Dev BPB:
 
 Conclusion:
 Gradient clipping consistently improved both the final training loss and the development BPB compared to the baseline. This suggests that limiting large gradient updates leads to more stable optimization under the fixed training budget. This change will be retained for future experiments.
+
+# Run 4 (Learning Rate Schedule)
+
+Hypothesis:
+A linear warmup followed by cosine learning-rate decay would improve optimization under the fixed 2000-step training budget compared to a constant learning rate.
+
+Changes:
+Retained the Adam optimizer and gradient clipping from the previous best configuration. Added a learning-rate schedule consisting of a 100-step linear warmup followed by cosine decay.
+
+Training:
+2000 optimizer steps.
+
+Parameters:
+1,339,840
+
+Final training loss:
+1.9020
+
+Dev BPB:
+2.6066
+
+Conclusion:
+The learning-rate schedule substantially degraded performance compared to the previous best run (2.6066 vs. 2.3526 BPB). With only 2000 optimizer steps, the warmup phase likely reduced the effective optimization time too much, preventing the model from reaching the same quality as the constant learning-rate baseline. This change was reverted.
+
+# Run 5 (Model Capacity Scaling)
+
+Hypothesis:
+The previous best configuration (Run 3) only utilized ~1.34M of the allowed 2.0M parameter budget. By increasing the hidden dimension, we can increase the model's representational capacity and better utilize the parameter cap to improve generalization.
+
+Changes:
+In model.py, increased `n_embd` from 160 to 192, and adjusted `n_head` from 4 to 6 to maintain clean division. All other settings (baseline Adam + gradient clipping) remained unchanged.
+
+Training:
+2000 optimizer steps.
+
+Parameters:
+1,902,720
+
+Final training loss:
+1.6841
+
+Dev BPB:
+2.3408
+
+Conclusion:
+Scaling the model utilized the remaining parameter budget effectively, leading to a new best BPB (down from 2.3526). The wider network absorbed more features within the 2000 steps without overfitting. This configuration will be kept as the new baseline.

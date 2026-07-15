@@ -12,7 +12,6 @@ HARD CAPS (checked at grading, violations = disqualified run):
 """
 import argparse
 import time
-import math
 
 import torch
 
@@ -71,18 +70,6 @@ def main():
         opt.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-        # Learning-rate schedule
-        warmup_steps = 100
-
-        if step <= warmup_steps:
-            lr = args.lr * step / warmup_steps
-        else:
-            progress = (step - warmup_steps) / (args.steps - warmup_steps)
-            lr = 0.5 * args.lr * (1 + math.cos(math.pi * progress))
-
-        for group in opt.param_groups:
-            group["lr"] = lr
-            
         opt.step()
         losses.append(loss.item())
         if step % args.log_every == 0 or step == 1:

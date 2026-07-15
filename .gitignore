@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# VS Code
+.vscode/
+
+# Virtual environments
+env/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model checkpoints
+starter/ckpt.pt
+
+data/
